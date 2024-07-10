@@ -215,7 +215,9 @@ We can get rid of the magic error in our `Search` function by extracting it into
 ```go
 t.Run("unknown word", func(t *testing.T) {
 	_, got := dictionary.Search("unknown")
-
+	if got == nil {
+		t.Fatal("expected to get an error.")
+	}
 	assertError(t, got, ErrNotFound)
 })
 ```
@@ -289,13 +291,13 @@ So when you pass a map to a function/method, you are indeed copying it, but just
 
 A gotcha with maps is that they can be a `nil` value. A `nil` map behaves like an empty map when reading, but attempts to write to a `nil` map will cause a runtime panic. You can read more about maps [here](https://blog.golang.org/go-maps-in-action).
 
-Therefore, you should never initialize an empty map variable:
+Therefore, you should never initialize a nil map variable:
 
 ```go
 var m map[string]string
 ```
 
-Instead, you can initialize an empty map like we were doing above, or use the `make` keyword to create a map for you:
+Instead, you can initialize an empty map or use the `make` keyword to create a map for you:
 
 ```go
 var dictionary = map[string]string{}
@@ -593,9 +595,7 @@ func TestDelete(t *testing.T) {
 	dictionary.Delete(word)
 
 	_, err := dictionary.Search(word)
-	if err != ErrNotFound {
-		t.Errorf("Expected %q to be deleted", word)
-	}
+	assertError(t, word, ErrNotFound)
 }
 ```
 
